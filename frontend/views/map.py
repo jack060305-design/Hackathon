@@ -115,22 +115,7 @@ def _default_api_base() -> str:
 
 def _direct_mode_help_markdown() -> str:
     base = _default_api_base()
-    return f"""
-**Tiếng Việt**
-- Fallback gọi thẳng **USGS + NWS** — **cùng nguồn** với API và MCP (`fetch_inland_risk_markers`). MCP **không** chiếm cổng 8000; nếu inland lỗi, thường do **timeout** hoặc **process khác** trên cổng 8000.
-- Chạy API từ **`backend/`**:
-  ```text
-  python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
-  ```
-- **`API_URL`** mặc định `{base}`.
-
-**English**
-- Direct fallback = **USGS + NWS** only (parity with API/MCP). MCP uses the same Python module; it does not conflict with HTTP.
-
-**HTTP / MCP**
-- `GET /api/inland-risk-map` → `fetch_inland_risk_markers`
-- MCP `get_inland_risk_map_json` → same function
-"""
+    return f
 
 
 def _api_connection_hint(api_err_meta: tuple | None, backend_alive: bool) -> str:

@@ -31,6 +31,58 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+_PAGE_OPTIONS = (
+    "🏠 Home",
+    "🗺️ Risk Map",
+    "🌊 Ocean Tracker",
+    "💬 AI Assistant",
+)
+
+
+def _qp_first(val) -> str | None:
+    if val is None:
+        return None
+    if isinstance(val, list):
+        return str(val[0]).strip() if val else None
+    return str(val).strip() or None
+
+
+def _all_query_params() -> dict:
+    """Streamlit 1.28: use experimental_get_query_params; 1.30+ has st.query_params."""
+    try:
+        qp = st.query_params
+        out: dict = {}
+        for k in qp.keys():
+            v = qp.get(k)
+            if isinstance(v, list):
+                out[k] = v
+            elif v is None:
+                out[k] = []
+            else:
+                out[k] = [v]
+        return out
+    except AttributeError:
+        return dict(st.experimental_get_query_params())
+
+
+def _geo_url_targets_ai_assistant() -> bool:
+    """True when geolocation redirect (?nav=ai or ?lat=&lon=) should open AI Assistant."""
+    raw = _all_query_params()
+    nav = _qp_first(raw.get("nav"))
+    if nav in ("ai", "assistant", "chatbot"):
+        return True
+    lat = _qp_first(raw.get("lat"))
+    lon = _qp_first(raw.get("lon"))
+    return bool(lat and lon)
+
+
+def _sync_sidebar_with_geo_url() -> None:
+    """Full-page geo reload must select AI Assistant (works on Streamlit 1.28 without st.query_params)."""
+    if _geo_url_targets_ai_assistant():
+        st.session_state.sidebar_radio = "💬 AI Assistant"
+    elif "sidebar_radio" not in st.session_state:
+        st.session_state.sidebar_radio = "🏠 Home"
+
 
 @st.cache_data(ttl=3600)
 def _fetch_county_list(api_base: str) -> list:
@@ -156,15 +208,12 @@ st.markdown(
 
 with st.sidebar:
     st.markdown("#### 🧭 Navigation")
+    _sync_sidebar_with_geo_url()
     page = st.radio(
         "Page",
-        [
-            "🏠 Home",
-            "🗺️ Risk Map",
-            "🌊 Ocean Tracker",
-            "💬 AI Assistant",
-        ],
+        list(_PAGE_OPTIONS),
         label_visibility="collapsed",
+        key="sidebar_radio",
     )
 
     st.divider()

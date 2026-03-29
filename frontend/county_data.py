@@ -1,6 +1,9 @@
 """County names and map points from data/florida_county_centroids.json (no backend required)."""
 
+from __future__ import annotations
+
 import json
+import math
 import os
 from pathlib import Path
 
@@ -107,3 +110,38 @@ def get_county_map_points_offline() -> list[dict]:
 def fetch_county_names(api_base: str | None = None) -> list:
     """Bundled centroids JSON only; api_base is ignored (kept for call sites)."""
     return county_names_fallback()
+
+
+# Rough Florida bounding box (inland risk map / UI)
+_FL_LAT_MIN, _FL_LAT_MAX = 24.45, 31.05
+_FL_LON_MIN, _FL_LON_MAX = -87.65, -79.85
+
+
+def is_in_florida_bbox(lat: float, lon: float) -> bool:
+    return _FL_LAT_MIN <= lat <= _FL_LAT_MAX and _FL_LON_MIN <= lon <= _FL_LON_MAX
+
+
+def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    r = 6371.0
+    p = math.pi / 180.0
+    a = 0.5 - math.cos((lat2 - lat1) * p) / 2.0 + math.cos(lat1 * p) * math.cos(
+        lat2 * p
+    ) * (1.0 - math.cos((lon2 - lon1) * p)) / 2.0
+    return 2.0 * r * math.asin(min(1.0, math.sqrt(a)))
+
+
+def nearest_county_from_latlon(lat: float, lon: float) -> tuple[str | None, float]:
+    """Return (county name, distance km) from bundled centroids, or (None, inf) if no data."""
+    p = _centroids_path()
+    if p is None:
+        return None, float("inf")
+    data = json.loads(p.read_text(encoding="utf-8"))
+    best_name: str | None = None
+    best_km = float("inf")
+    for name, c in data.items():
+        clat, clon = float(c["lat"]), float(c["lon"])
+        d = _haversine_km(lat, lon, clat, clon)
+        if d < best_km:
+            best_km = d
+            best_name = name
+    return best_name, best_km

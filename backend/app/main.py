@@ -6,7 +6,11 @@ from .api.disasters import _inland_risk_map_payload
 
 app = FastAPI(
     title="Florida Disaster Risk API",
-    description="AI-powered disaster risk prediction for Florida",
+    description=(
+        "AI-powered disaster risk prediction for Florida. "
+        "**Browser Geolocation** (W3C) is not an HTTP endpoint: the client gets `lat`/`lon` via "
+        "`navigator.geolocation`, then may call **`GET /api/disasters/location-context`** with those coordinates."
+    ),
     version="1.0.0",
 )
 

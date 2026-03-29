@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from typing import Any, List
 
 from ..services import inland_risk_map as inland_risk_map_service
+from ..services import location_context as location_context_service
 from ..services import noaa, nws_alerts, usgs
 from ..schemas import DisasterEvent
 
@@ -47,6 +48,42 @@ async def get_inland_risk_map_disasters_hyphen(limit: int = 40):
 )
 async def get_inland_risk_map_disasters_underscore(limit: int = 40):
     return await _inland_risk_map_payload(limit)
+
+
+@router.get("/location-context")
+async def get_location_context(
+    lat: float = Query(
+        ...,
+        ge=-90.0,
+        le=90.0,
+        description="Latitude from the **browser Geolocation API** (`position.coords.latitude`).",
+    ),
+    lon: float = Query(
+        ...,
+        ge=-180.0,
+        le=180.0,
+        description="Longitude from the **browser Geolocation API** (`position.coords.longitude`).",
+    ),
+    inland_limit: int = Query(
+        80,
+        ge=10,
+        le=120,
+        description="Upper bound passed to inland risk aggregation before distance filter.",
+    ),
+) -> dict[str, Any]:
+    """
+    **Geolocation is implemented in the browser**, not on the server ([W3C Geolocation API](https://w3c.github.io/geolocation-api/)).
+
+    Flow: `navigator.geolocation.getCurrentPosition(...)` → send `lat`/`lon` here → get inland highlights
+    + 7-day ocean outlook + coastal risk (same fusion as the Streamlit AI Assistant status card).
+
+    OpenAPI lists this route so `/docs` documents the contract; there is no separate “Geolocation”
+    HTTP method because the browser owns location permissions.
+    """
+    try:
+        return await location_context_service.build_location_context(lat, lon, inland_limit)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/nws/health")
