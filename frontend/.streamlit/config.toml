@@ -1,14 +1,13 @@
-# White + pastel blue theme (Streamlit 1.28+)
+# Blue + black theme — matches frontend/theme.py
 [theme]
-primaryColor = "#5eb8d9"
-backgroundColor = "#ffffff"
-secondaryBackgroundColor = "#f2f8fc"
-textColor = "#1f3d4a"
+primaryColor = "#3b82f6"
+backgroundColor = "#050608"
+secondaryBackgroundColor = "#131a24"
+textColor = "#f1f5f9"
 font = "sans serif"
 
 [client]
 toolbarMode = "minimal"
 
-# Single dev URL: http://127.0.0.1:8888 (see run-project.ps1)
 [server]
 port = 8888

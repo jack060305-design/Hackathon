@@ -11,6 +11,7 @@ from inland_direct_fetch import (
     fetch_inland_risk_markers_direct,
     fetch_usgs_feed_for_sidebar,
 )
+from theme import COLORS
 
 
 def _repo_root() -> Path:
@@ -115,7 +116,10 @@ def _default_api_base() -> str:
 
 def _direct_mode_help_markdown() -> str:
     base = _default_api_base()
-    return f
+    return (
+        f"Run **`uvicorn`** from **`backend/`** so **`{base}`** serves the inland map routes. "
+        "Set **`API_URL`** if the API uses another host or port."
+    )
 
 
 def _api_connection_hint(api_err_meta: tuple | None, backend_alive: bool) -> str:
@@ -140,11 +144,12 @@ def _api_connection_hint(api_err_meta: tuple | None, backend_alive: bool) -> str
 
 
 def _risk_color(risk_pct: float) -> tuple[str, str]:
+    """Stroke color, fill color — aligned with theme (danger / warning / success)."""
     if risk_pct >= 70:
-        return "red", "darkred"
+        return COLORS["danger"], "#d6554d"
     if risk_pct >= 40:
-        return "orange", "orangered"
-    return "green", "lightgreen"
+        return COLORS["warning"], "#d9a565"
+    return COLORS["success"], "#4a9d78"
 
 
 def show():
@@ -168,15 +173,14 @@ def show():
             alive = _api_health_ok(base)
             if alive:
                 st.info(
-                    f"**`/api/inland-risk-map`** không phản hồi kịp hoặc lỗi — đang dùng **USGS + NWS** trực tiếp "
-                    f"(cùng dữ liệu với **`fetch_inland_risk_markers`** / MCP). **MCP không xung đột** với API. "
-                    f"Kiểm tra đúng **Hackathon API** trên `{base}`.",
-                    icon="📡",
+                    f"**`/api/inland-risk-map`** timed out or failed — using **USGS + NWS** directly "
+                    f"(same feeds as **`fetch_inland_risk_markers`** / MCP). Confirm the Hackathon API at **`{base}`**.",
+                    icon=":material/satellite_alt:",
                 )
             else:
                 st.info(
-                    f"**API** `{base}` không khả dụng. Đang dùng **USGS + NWS** trực tiếp (giống backend/MCP).",
-                    icon="📡",
+                    f"**API** `{base}` is unavailable. Using **USGS + NWS** directly (same as backend/MCP).",
+                    icon=":material/rss_feed:",
                 )
             diag = _api_connection_hint(api_err_meta, alive)
             if diag:
@@ -282,17 +286,24 @@ def show():
                 tooltip=f"{dtype} · {risk:.0f}% · next {next_days}d · {src}",
             ).add_to(m)
 
-    legend_html = """
+    d, w, s, br, tx = (
+        COLORS["danger"],
+        COLORS["warning"],
+        COLORS["success"],
+        COLORS["border"],
+        COLORS["text_muted"],
+    )
+    legend_html = f"""
     <div style="position: fixed; bottom: 96px; left: 50px; z-index: 9999;
-                background: white; padding: 12px; border-radius: 8px;
-                border: 2px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-                font-family: Arial; font-size: 14px;">
-    <b>Inland risk (non-hurricane)</b><br>
-    <span style="color:red">●</span> High (70%+)<br>
-    <span style="color:orange">●</span> Medium (40–70%)<br>
-    <span style="color:green">●</span> Lower (&lt;40%)<br>
-    <hr style="margin: 5px 0;">
-    <span>USGS · NWS (API / MCP / direct)</span>
+                background: {COLORS["surface"]}; padding: 12px 14px; border-radius: 12px;
+                border: 1px solid {br}; box-shadow: 0 4px 14px rgba(20,40,46,0.12);
+                font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 13px; color: {COLORS["text"]};">
+    <b style="color:{COLORS["primary_dark"]};">Inland risk (non-hurricane)</b><br>
+    <span style="color:{d}">●</span> High (70%+) &nbsp;
+    <span style="color:{w}">●</span> Medium (40–70%) &nbsp;
+    <span style="color:{s}">●</span> Lower (&lt;40%)<br>
+    <hr style="margin: 8px 0; border: none; border-top: 1px solid {br};">
+    <span style="font-size:11px;color:{tx};">USGS · NWS · API / MCP / direct</span>
     </div>
     """
     m.get_root().html.add_child(folium.Element(legend_html))

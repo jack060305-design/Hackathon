@@ -9,11 +9,18 @@ import os
 from datetime import datetime
 
 from county_data import fetch_county_names
+from theme import inject_theme
 from views import map as map_page
 from views import chatbot as chatbot_page
 from views import ocean_tracker as ocean_tracker_page
 
 API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
+
+PAGE_HOME = "Home"
+PAGE_MAP = "Risk Map"
+PAGE_OCEAN = "Ocean Tracker"
+PAGE_AI = "AI Assistant"
+_PAGE_OPTIONS = (PAGE_HOME, PAGE_MAP, PAGE_OCEAN, PAGE_AI)
 
 # Sidebar + Quick Stats: single list (label, info URL)
 DATA_SOURCES: list[tuple[str, str]] = [
@@ -31,12 +38,17 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-_PAGE_OPTIONS = (
-    "🏠 Home",
-    "🗺️ Risk Map",
-    "🌊 Ocean Tracker",
-    "💬 AI Assistant",
-)
+inject_theme()
+
+# Migrate old sidebar labels (emoji) after theme update
+_OLD_PAGE_LABELS = {
+    "🏠 Home": PAGE_HOME,
+    "🗺️ Risk Map": PAGE_MAP,
+    "🌊 Ocean Tracker": PAGE_OCEAN,
+    "💬 AI Assistant": PAGE_AI,
+}
+if st.session_state.get("sidebar_radio") in _OLD_PAGE_LABELS:
+    st.session_state.sidebar_radio = _OLD_PAGE_LABELS[st.session_state.sidebar_radio]
 
 
 def _qp_first(val) -> str | None:
@@ -89,12 +101,12 @@ def _sync_sidebar_with_geo_url() -> None:
     )
     if st.session_state.get("_geo_url_nav_sig") == sig:
         if "sidebar_radio" not in st.session_state:
-            st.session_state.sidebar_radio = "🏠 Home"
+            st.session_state.sidebar_radio = PAGE_HOME
         return
     if "sidebar_radio" not in st.session_state:
-        st.session_state.sidebar_radio = "🏠 Home"
+        st.session_state.sidebar_radio = PAGE_HOME
     if _geo_url_targets_ai_assistant():
-        st.session_state.sidebar_radio = "💬 AI Assistant"
+        st.session_state.sidebar_radio = PAGE_AI
     st.session_state._geo_url_nav_sig = sig
 
 
@@ -116,9 +128,9 @@ def show_home():
         st.markdown("#### What you can do")
         st.markdown(
             """
-- 🗺️ **Risk Map** — Inland hazard markers (USGS + NWS): risk %, type, short outlook window  
-- 🌊 **Ocean Tracker** — Tropical-style outlook for Florida when systems are active  
-- 💬 **AI Assistant** — Chatbot only: questions, preparedness, and safety guidance  
+- **Risk Map** — Inland hazard markers (USGS + NWS): risk %, type, short outlook window  
+- **Ocean Tracker** — Tropical-style outlook for Florida when systems are active  
+- **AI Assistant** — Chatbot only: questions, preparedness, and safety guidance  
 """
         )
         st.markdown("#### Data behind the scenes")
@@ -127,13 +139,13 @@ def show_home():
         )
 
     with c2:
-        st.markdown("#### 📊 Quick stats")
+        st.markdown("#### Quick stats")
 
         n_counties = len(_fetch_county_list(API_URL))
-        st.metric("📍 Florida Counties", n_counties)
-        st.metric("⚡ Evacuation tiers", 3, "Zones A / B / C")
+        st.metric("Florida counties", n_counties)
+        st.metric("Evacuation tiers", 3, "Zones A / B / C")
         st.metric(
-            "📡 Data sources",
+            "Data sources",
             len(DATA_SOURCES),
             "USGS · NOAA · NWS · …",
         )
@@ -141,75 +153,10 @@ def show_home():
 
 st.markdown(
     """
-<style>
-    .stApp {
-        background: #ffffff !important;
-    }
-    [data-testid="stHeader"] {
-        background: #ffffff !important;
-        border-bottom: 1px solid #d6ebf5 !important;
-    }
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #fbfdff 0%, #f0f7fb 100%) !important;
-        border-right: 1px solid #cfe8f2 !important;
-        z-index: 100010 !important;
-    }
-    [data-testid="stSidebar"] .block-container {
-        padding-top: 0.75rem;
-    }
-    .main .block-container {
-        padding-top: 0.5rem !important;
-        padding-bottom: 0.5rem !important;
-    }
-    section[data-testid="stMain"] > div {
-        padding-top: 0 !important;
-    }
-    .main-header {
-        background: linear-gradient(135deg, #e8f4fc 0%, #d4ecf7 50%, #cfe9f5 100%);
-        padding: 1rem 1.25rem;
-        border-radius: 14px;
-        color: #1e4a5c;
-        margin-bottom: 1rem;
-        margin-top: 0;
-        border: 1px solid #b8d9ea;
-        box-shadow: 0 2px 12px rgba(120, 180, 210, 0.12);
-    }
-    .main-header-inner {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 1.25rem;
-        flex-wrap: wrap;
-    }
-    .main-header-icon {
-        font-size: 4.25rem;
-        line-height: 1;
-        filter: drop-shadow(0 2px 4px rgba(30,80,120,0.2));
-    }
-    .main-header-text {
-        text-align: center;
-    }
-    .main-header h1 {
-        font-size: 1.6rem;
-        font-weight: 700;
-        margin: 0;
-        color: #0d3d52;
-    }
-    .main-header .main-header-sub {
-        margin: 0.4rem 0 0 0;
-        color: #3d6a7d;
-        font-size: 0.98rem;
-    }
-</style>
-""",
-    unsafe_allow_html=True,
-)
-
-st.markdown(
-    """
 <div class="main-header">
   <div class="main-header-inner">
-    <span class="main-header-icon" title="Disaster preparedness">🛡️</span>
+    <span class="main-header-icon material-symbols-outlined" title="Disaster preparedness"
+          aria-hidden="true">shield_person</span>
     <div class="main-header-text">
       <h1>Florida Disaster Risk Prediction</h1>
       <p class="main-header-sub">Hazard data, maps, and a conversational assistant for residents</p>
@@ -221,7 +168,10 @@ st.markdown(
 )
 
 with st.sidebar:
-    st.markdown("#### 🧭 Navigation")
+    st.markdown(
+        '<p class="sidebar-heading"><span class="material-symbols-outlined">menu_book</span> Navigation</p>',
+        unsafe_allow_html=True,
+    )
     _sync_sidebar_with_geo_url()
     page = st.radio(
         "Page",
@@ -232,35 +182,44 @@ with st.sidebar:
 
     st.divider()
 
-    st.markdown("#### 🔌 System status")
+    st.markdown(
+        '<p class="sidebar-heading"><span class="material-symbols-outlined">dns</span> System status</p>',
+        unsafe_allow_html=True,
+    )
     try:
         response = requests.get(f"{API_URL}/health", timeout=2)
         if response.status_code == 200:
-            st.success("✅ Backend Connected")
+            st.success("Backend connected", icon=":material/cloud_done:")
             st.caption(f"API: {API_URL}")
         else:
-            st.warning("⚠️ Backend Issue")
+            st.warning("Backend returned an error", icon=":material/error_outline:")
     except Exception:
-        st.error("❌ Backend Disconnected")
+        st.error("Backend unreachable", icon=":material/wifi_off:")
         st.caption("Make sure backend is running at 127.0.0.1:8000")
 
     st.divider()
 
-    st.markdown("#### 📡 Data sources")
+    st.markdown(
+        '<p class="sidebar-heading"><span class="material-symbols-outlined">database</span> Data sources</p>',
+        unsafe_allow_html=True,
+    )
     for label, url in DATA_SOURCES:
         st.markdown(f"- [{label}]({url})")
 
     st.divider()
 
-    st.markdown("#### 📅 Update schedule")
+    st.markdown(
+        '<p class="sidebar-heading"><span class="material-symbols-outlined">schedule</span> Update schedule</p>',
+        unsafe_allow_html=True,
+    )
     st.markdown("**Every 7 days**")
     st.caption(f"Last update: {datetime.now().strftime('%Y-%m-%d')}")
 
-if page == "🏠 Home":
+if page == PAGE_HOME:
     show_home()
-elif page == "🗺️ Risk Map":
+elif page == PAGE_MAP:
     map_page.show()
-elif page == "🌊 Ocean Tracker":
+elif page == PAGE_OCEAN:
     ocean_tracker_page.show()
-elif page == "💬 AI Assistant":
+elif page == PAGE_AI:
     chatbot_page.show()

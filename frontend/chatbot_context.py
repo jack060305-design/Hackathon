@@ -121,7 +121,7 @@ def build_status_markdown(
     coastal: dict[str, Any] | None,
 ) -> str:
     lines: list[str] = []
-    lines.append("### 📍 Your status check")
+    lines.append("### Your status check")
     lines.append(
         f"**Coordinates:** `{lat:.4f}, {lon:.4f}`  \n"
         f"**Nearest Florida county (centroid):** {county or '—'}  \n"
@@ -131,7 +131,7 @@ def build_status_markdown(
             "*Note: coordinates look **outside** the usual Florida map box; inland highlights may be sparse.*\n"
         )
 
-    lines.append("#### 🗺️ Inland risk (Risk Map feed)")
+    lines.append("#### Inland risk (Risk Map feed)")
     if not inland_near:
         lines.append(
             "- No ranked hazard markers within ~280 km, or API unavailable. Open **Risk Map** for full state data."
@@ -151,7 +151,7 @@ def build_status_markdown(
                 f"- **{label}** — risk **{rs}** · next ~**{nd}** day(s) · source `{src}`"
             )
 
-    lines.append("#### 🌊 Ocean tracking")
+    lines.append("#### Ocean tracking")
     if coastal:
         lines.append(
             f"- **Coastal outlook:** {coastal.get('coastal_risk', '—')} — _{coastal.get('advisory', '')}_"
@@ -193,7 +193,7 @@ def load_context_for_location(lat: float, lon: float) -> tuple[str, str | None, 
     base, err = pick_working_api_base()
     if base is None:
         return (
-            "### 📍 Location received\n"
+            "### Location received\n"
             f"Could not reach the backend API ({err}). "
             "Start the API from `backend/` and try **Check location / status** again.",
             None,

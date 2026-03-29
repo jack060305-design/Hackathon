@@ -10,6 +10,8 @@ import requests
 import streamlit as st
 from streamlit_folium import folium_static
 
+from theme import COLORS
+
 
 def _api_bases() -> list[str]:
     """If API_URL is unset, try common ports (8000 then 8001) — avoids 'No outlook data' when backend uses another port."""
@@ -39,14 +41,15 @@ def _fetch_seven_day_outlook():
             last_err = ("conn", str(e), url, "")
     return None, last_err
 
+# Day 1 → 7: deep teal → pale surf (theme-coherent, distinguishable on map)
 _DAY_COLORS = [
-    "#d73027",
-    "#fc8d59",
-    "#fee08b",
-    "#d9ef8b",
-    "#91cf60",
-    "#1a9850",
-    "#006837",
+    "#0a3d47",
+    "#0f5c6b",
+    "#1a7a8c",
+    "#3a9bab",
+    "#6bb8c4",
+    "#a8d4dc",
+    "#e8f2f4",
 ]
 
 
@@ -90,7 +93,7 @@ def show():
 
     folium.Rectangle(
         bounds=[[24.0, -87.8], [31.2, -79.8]],
-        color="#2c7fb8",
+        color=COLORS["primary_light"],
         weight=1,
         fill=True,
         fill_opacity=0.04,
@@ -127,12 +130,14 @@ def show():
                 tooltip=f"{name} · day {day} · inland ~{inland}%",
             ).add_to(m)
 
-    legend_html = """
+    legend_html = f"""
     <div style="position: fixed; bottom: 48px; left: 48px; z-index: 1000;
-            background: white; padding: 10px 12px; border-radius: 8px;
-            border: 1px solid #ccc; font-size: 13px; max-width: 260px;">
-    <b>Marker color</b> ≈ earlier (red) → later (green) modeled inland day (1–7).<br>
-    <span style="font-size:11px;color:#555;">Data: NHC CurrentStorms + backend heuristics</span>
+            background: {COLORS["surface"]}; padding: 10px 14px; border-radius: 12px;
+            border: 1px solid {COLORS["border"]}; font-size: 13px; max-width: 280px;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: {COLORS["text"]};
+            box-shadow: 0 4px 14px rgba(20,40,46,0.1);">
+    <b style="color:{COLORS["primary_dark"]};">Marker color</b> — modeled inland day <b>1 → 7</b> (darker = sooner).<br>
+    <span style="font-size:11px;color:{COLORS["text_muted"]};">NHC CurrentStorms + backend heuristics</span>
     </div>
     """
     m.get_root().html.add_child(folium.Element(legend_html))
