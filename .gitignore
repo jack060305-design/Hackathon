@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# Model files (quan trọng: không commit model lên GitHub)
+*.pkl
+*.joblib
+ml/models/*.pkl
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+
+# Database
+*.db
+*.sqlite
+
+# Backend
+backend/__pycache__/
+backend/.env
+
+# Frontend
+frontend/__pycache__/
+
+# ML
+ml/__pycache__/
+ml/models/

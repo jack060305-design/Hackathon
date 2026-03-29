@@ -1,0 +1,10 @@
+# Python 3.12+ / 3.13 compatible (pinned stack was built for 3.10–3.11)
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.5.0
+httpx>=0.25.0
+pandas>=2.2.0
+numpy>=1.26.0
+scikit-learn>=1.5.0
+python-multipart>=0.0.9
+python-dotenv>=1.0.0

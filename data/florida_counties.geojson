@@ -1,0 +1,45 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"name": "Miami-Dade", "risk_zone": "A", "coastal": true},
+      "geometry": {"type": "Point", "coordinates": [-80.19, 25.76]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Broward", "risk_zone": "A", "coastal": true},
+      "geometry": {"type": "Point", "coordinates": [-80.14, 26.12]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Palm Beach", "risk_zone": "B", "coastal": true},
+      "geometry": {"type": "Point", "coordinates": [-80.13, 26.64]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Hillsborough", "risk_zone": "C", "coastal": true},
+      "geometry": {"type": "Point", "coordinates": [-82.46, 27.95]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Orange", "risk_zone": "D", "coastal": false},
+      "geometry": {"type": "Point", "coordinates": [-81.38, 28.54]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Duval", "risk_zone": "B", "coastal": true},
+      "geometry": {"type": "Point", "coordinates": [-81.65, 30.33]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Pinellas", "risk_zone": "A", "coastal": true},
+      "geometry": {"type": "Point", "coordinates": [-82.73, 27.96]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"name": "Lee", "risk_zone": "A", "coastal": true},
+      "geometry": {"type": "Point", "coordinates": [-81.87, 26.64]}
+    }
+  ]
+}
