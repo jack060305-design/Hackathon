@@ -1,13 +1,23 @@
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+# Load backend/.env even if uvicorn was started outside backend/
+_BACKEND_ROOT = Path(__file__).resolve().parent.parent
+load_dotenv(_BACKEND_ROOT / ".env")
+load_dotenv()
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .api import disasters, prediction, ocean
+from .api import chat, disasters, prediction, ocean
 from .api.disasters import _inland_risk_map_payload
 
 app = FastAPI(
     title="Florida Disaster Risk API",
     description=(
-        "AI-powered disaster risk prediction for Florida. "
+        "Disaster risk data and **Gemini**-powered chat for Florida. "
+        "**POST /api/chat** expects `GEMINI_API_KEY` on the server. "
         "**Browser Geolocation** (W3C) is not an HTTP endpoint: the client gets `lat`/`lon` via "
         "`navigator.geolocation`, then may call **`GET /api/disasters/location-context`** with those coordinates."
     ),
@@ -25,6 +35,7 @@ app.add_middleware(
 app.include_router(disasters.router, prefix="/api/disasters", tags=["disasters"])
 app.include_router(prediction.router, prefix="/api/prediction", tags=["prediction"])
 app.include_router(ocean.router, prefix="/api/ocean", tags=["ocean"])
+app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 
 
 @app.get(

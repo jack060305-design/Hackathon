@@ -1,16 +1,57 @@
+import os
+
+import requests
 import streamlit as st
 import streamlit.components.v1 as components
 
 from chatbot_context import load_context_for_location
 
-# (short label, full text sent to the assistant) — shown as chips above the chat input
+API_URL = os.getenv("API_URL", "http://127.0.0.1:8000").rstrip("/")
+
+_GEO_LLM_USER_LABEL = "📍 Check location & hazard context"
+
+_GEO_ANNOUNCE_INSTRUCTION = """The user just used "Check location" in the app. Below is **app-loaded** Florida hazard/status context from backend APIs (Risk Map / ocean outlook — not something you fetched yourself).
+
+---
+{md}
+---
+
+Give one **short** assistant opening in Markdown (about 4–8 lines): welcome them, mention county or area if clear, summarize what matters for preparedness from this context, and point to official sources (NWS, county EM, FloridaDisaster.org) for live orders. Synthesize; do not paste the raw context back verbatim."""
+
+# (short label, full prompt sent to Gemini) — full strings are explicit so the model answers well
 SUGGESTED_PROMPTS: tuple[tuple[str, str], ...] = (
-    ("Go-bag essentials?", "What should I put in my go-bag for 3 days?"),
-    ("Evacuation tips?", "How do I evacuate safely if ordered?"),
-    ("48h before hurricane?", "What should I do 48 hours before a hurricane?"),
-    ("Official alerts?", "Where can I get official alerts for my county?"),
-    ("Hurricane prep?", "What should I do to prepare for a hurricane?"),
-    ("Flood safety?", "How do I stay safe during flash flooding?"),
+    (
+        "Go-bag (3 days)",
+        "I am preparing for hurricanes in Florida. List specific items for a **3-day emergency go-bag** "
+        "for one adult, grouped by category (water, food, medications, documents, tools, hygiene). "
+        "Add a short note on pets if relevant. Use bullet points.",
+    ),
+    (
+        "Evacuation order",
+        "Explain what I should do if **local officials issue an evacuation order** in Florida: "
+        "how to decide timing, what to bring, route planning, and common mistakes to avoid. "
+        "Keep it practical and mention following county EM and law enforcement.",
+    ),
+    (
+        "48h before hurricane",
+        "What should I prioritize in the **48 hours before a hurricane** makes landfall in Florida? "
+        "Give a prioritized checklist (home, supplies, documents, vehicle, communication).",
+    ),
+    (
+        "Official alerts",
+        "Where should I get **official weather and evacuation alerts** for my Florida county? "
+        "Name types of sources (NWS, county EM, state) and what to avoid (rumors).",
+    ),
+    (
+        "Hurricane prep",
+        "Give a **concise hurricane preparedness overview** for a Florida household: "
+        "home hardening, insurance docs, medical needs, and when to shelter in place vs evacuate.",
+    ),
+    (
+        "Flash flood safety",
+        "What are the top **flash flood safety rules** for Florida (driving, walking, storm surge vs rainfall)? "
+        "Use clear do / don't bullets.",
+    ),
 )
 
 # Browser Geolocation API: getLocation() → getCurrentPosition(successCb, errorCb, options)
@@ -163,18 +204,17 @@ def _parse_float_q(val) -> float | None:
 
 
 def _apply_geo_announcement(lat: float, lon: float) -> None:
-    """Single assistant message for this lat/lon (idempotent per coordinate key)."""
+    """Load API hazard context, county, and queue one LLM announce turn (idempotent per coordinate key)."""
     key = f"{lat:.5f},{lon:.5f}"
     st.session_state.geo_lat = lat
     st.session_state.geo_lon = lon
     st.session_state.location_acquired = True
-    if st.session_state.get("_geo_announce_key") == key:
+    if st.session_state.get("_geo_llm_announced_key") == key:
         return
 
-    md, _base, county = load_context_for_location(lat, lon)
-    st.session_state.chat_messages.append({"role": "assistant", "content": md})
-    st.session_state._geo_announce_key = key
+    md, _, county = load_context_for_location(lat, lon)
     st.session_state.nearest_county = county
+    st.session_state["_pending_geo_llm"] = {"md": md, "county": county, "key": key}
 
 
 def _maybe_process_geo_url() -> None:
@@ -187,137 +227,122 @@ def _maybe_process_geo_url() -> None:
     _apply_geo_announcement(lat, lon)
 
 
+def _normalize_turn_text(s: str) -> str:
+    """Stable compare for chat turns (Streamlit/chat_input vs stored history)."""
+    return (s or "").replace("\r\n", "\n").strip()
+
+
+def _tail_already_answered(user_text: str) -> bool:
+    """
+    True if the last messages are already user (this prompt) + assistant.
+    st.chat_input keeps returning the submitted string on later reruns; skip duplicate API/UI turns.
+    """
+    norm = _normalize_turn_text(user_text)
+    if not norm:
+        return False
+    msgs = st.session_state.chat_messages
+    if len(msgs) < 2:
+        return False
+    u, a = msgs[-2], msgs[-1]
+    return (
+        u.get("role") == "user"
+        and a.get("role") == "assistant"
+        and _normalize_turn_text(u.get("content") or "") == norm
+    )
+
+
+def _post_chat_messages(payload_messages: list[dict], county: str | None) -> str:
+    """POST `/api/chat` once; returns assistant text or a markdown error message."""
+    try:
+        r = requests.post(
+            f"{API_URL}/api/chat",
+            json={"messages": payload_messages, "county": county},
+            timeout=120,
+        )
+        if r.status_code == 503:
+            return (
+                "**AI is not configured on the server.**\n\n"
+                "Set `GEMINI_API_KEY` in the backend environment (e.g. `backend/.env`) and restart the API. "
+                "See [Google AI Studio](https://aistudio.google.com/apikey) for a key."
+            )
+        if r.status_code == 429:
+            try:
+                err = r.json().get("detail", r.text)
+            except Exception:
+                err = r.text
+            return f"**Gemini rate limit / quota**\n\n{err}"
+        if not r.ok:
+            try:
+                err = r.json().get("detail", r.text)
+            except Exception:
+                err = r.text or r.reason
+            return f"**API error ({r.status_code})**\n\n{err}"
+        data = r.json()
+        reply = (data.get("reply") or "").strip()
+        return reply or "_Empty response from model._"
+    except requests.HTTPError as e:
+        resp = e.response
+        detail = ""
+        if resp is not None:
+            try:
+                detail = resp.json().get("detail", resp.text)
+            except Exception:
+                detail = resp.text or str(e)
+        return f"**API error**\n\n{detail}"
+    except requests.RequestException as e:
+        return (
+            f"**Could not reach the AI service** at `{API_URL}`.\n\n"
+            f"`{e}`\n\n"
+            "Start the backend from `backend/` and check that `/health` responds."
+        )
+
+
 def generate_response(prompt: str, county: str | None) -> str:
-    prompt_lower = prompt.lower()
-    county_label = county or "your area"
-
-    if any(word in prompt_lower for word in ["hurricane", "storm", "cyclone"]):
-        return """
-**🌀 Hurricane Preparedness Guide**
-
-**Before Hurricane:**
-- 📦 Stock emergency supplies (3-7 days)
-- 🪟 Secure windows and doors with shutters
-- 🔋 Charge all devices and power banks
-- 🚗 Fill gas tank
-- 📝 Gather important documents
-
-**During Hurricane:**
-- 🏠 Stay indoors away from windows
-- 📻 Monitor official updates
-- 🚫 Do not go outside
-
-**After Hurricane:**
-- ⚠️ Check for hazards before leaving
-- 📞 Report damage to authorities
-- 💧 Boil water until advised safe
-"""
-
-    if any(word in prompt_lower for word in ["flood", "flooding"]):
-        return """
-**💧 Flood Safety Guide**
-
-**Before Flood:**
-- 📦 Move valuables to higher ground
-- 🔌 Turn off electricity if water rises
-- 🚗 Prepare to evacuate if needed
-
-**During Flood:**
-- 🏔️ Move to higher ground immediately
-- 🚫 NEVER drive through flood water
-- 🚶‍♂️ Do not walk through moving water
-
-**After Flood:**
-- ⚠️ Avoid floodwater (contaminated)
-- 📞 Wait for official "all clear"
-- 🧹 Document damage for insurance
-"""
-
-    if any(word in prompt_lower for word in ["evacuation", "evacuate", "zone"]):
-        return f"""
-**🚗 Evacuation Information**
-
-**Your area:** {county_label} — follow **FDEM** and your **county emergency management** for evacuation zones and orders.
-
-**Evacuation Checklist:**
-- 🎒 Go-bag with essentials (clothes, meds, documents)
-- 💊 7-day supply of medications
-- 📱 Phone, charger, power bank
-- 💧 Water and snacks
-- 🗺️ Map with evacuation routes
-- 🐕 Pet supplies if applicable
-
-**Important:** Follow official evacuation orders immediately. Don't wait!
-"""
-
-    if any(
-        word in prompt_lower
-        for word in ["kit", "supplies", "prepare", "emergency", "go-bag", "go bag"]
+    """Gemini reply via backend `/api/chat` (API key stays on server)."""
+    prompt_n = _normalize_turn_text(prompt)
+    base = [
+        {"role": m["role"], "content": m["content"]}
+        for m in st.session_state.chat_messages
+        if m.get("role") in ("user", "assistant")
+    ]
+    # Phantom resubmit: history already ends with this question + answer — do not call the API again.
+    if (
+        len(base) >= 2
+        and base[-2].get("role") == "user"
+        and base[-1].get("role") == "assistant"
+        and _normalize_turn_text(base[-2].get("content") or "") == prompt_n
     ):
-        return """
-**📦 Emergency Kit Checklist**
+        return (base[-1].get("content") or "").strip()
 
-**Water & Food:**
-- 💧 1 gallon water per person per day (3-7 days)
-- 🍫 Non-perishable food (3-7 days)
-- 🥫 Manual can opener
+    return _post_chat_messages([*base, {"role": "user", "content": prompt_n}], county)
 
-**Tools & Supplies:**
-- 🔦 Flashlight with extra batteries
-- 📻 Battery-powered radio
-- 🔋 Power bank for phones
-- 🗺️ Local maps
-- 📝 Important documents (IDs, insurance)
 
-**Health & Safety:**
-- 💊 Prescription medications (7-day supply)
-- 🩹 First aid kit
-- 🪥 Personal hygiene items
-- 😷 Masks and sanitizer
-
-**Special Items:**
-- 🐕 Pet supplies if applicable
-- 👶 Baby supplies if applicable
-- 👴 Elderly care items if applicable
-"""
-
-    if any(
-        word in prompt_lower
-        for word in ["alert", "official", "warning", "watch", "noaa", "nws", "county"]
-    ):
-        return f"""
-**📢 Official information**
-
-- **NWS:** [weather.gov](https://www.weather.gov/) — alerts and warnings for **{county_label}**
-- **NHC:** [nhc.noaa.gov](https://www.nhc.noaa.gov/) — tropical cyclones
-- **Florida:** [floridadisaster.org](https://www.floridadisaster.org/) — state guidance
-
-Use **local county** emergency management and **FEMA app** where available. Your **status check** above uses the same API feeds as the Risk Map and Ocean Tracker when the backend is running.
-"""
-
-    return f"""
-**🤖 Florida Disaster Assistant**
-
-I can help with:
-- 🌪️ **Hurricanes** — preparation, safety, recovery
-- 💧 **Floods** — safety tips, evacuation
-- 🚗 **Evacuation** — planning and routes
-- 📦 **Emergency kit** — what to prepare
-- 📍 **Your area:** {county_label}
-
-**Try asking:**
-- "What should I do during a hurricane?"
-- "How to prepare for flooding?"
-- "What's in a good go-bag?"
-"""
+def _run_geo_llm_announce_if_pending() -> None:
+    """After Check location: one LLM call with API hazard markdown, then append short user label + assistant reply."""
+    geo = st.session_state.pop("_pending_geo_llm", None)
+    if not geo:
+        return
+    md = (geo.get("md") or "").strip() or "_No hazard context returned._"
+    county = geo.get("county")
+    key = geo.get("key")
+    user_content = _GEO_ANNOUNCE_INSTRUCTION.format(md=md)
+    if _tail_already_answered(_GEO_LLM_USER_LABEL):
+        if key:
+            st.session_state._geo_llm_announced_key = key
+        st.session_state._chat_input_key = int(st.session_state.get("_chat_input_key", 0)) + 1
+        return
+    with st.spinner("Summarizing your location with Gemini…"):
+        reply = _post_chat_messages([{"role": "user", "content": user_content}], county)
+    st.session_state.chat_messages.append({"role": "user", "content": _GEO_LLM_USER_LABEL})
+    st.session_state.chat_messages.append({"role": "assistant", "content": reply})
+    if key:
+        st.session_state._geo_llm_announced_key = key
+    st.session_state._chat_input_key = int(st.session_state.get("_chat_input_key", 0)) + 1
 
 
 def _assistant_header() -> None:
     st.subheader("💬 AI Disaster Assistant")
-    st.markdown(
-        "Ask about disaster preparedness, evacuation, or safety tips. "
-        "Your **area status** in the chat uses **Risk Map** + **Ocean** API data when the backend is running."
-    )
+    st.markdown("Answers are generated by **Google Gemini** (via your API).")
 
 
 def _render_geo_only() -> None:
@@ -326,13 +351,24 @@ def _render_geo_only() -> None:
 
 
 def _inject_chat_layout_css() -> None:
-    """Reserve vertical space so suggestion chips are not covered by Streamlit's fixed chat input."""
+    """Reserve space for Streamlit fixed chat input; keep button styles scoped to main."""
     st.markdown(
         """
 <style>
   section[data-testid="stMain"] .block-container,
   section.main .block-container {
-    padding-bottom: max(20rem, 42vh) !important;
+    padding-bottom: max(22rem, 42vh) !important;
+    margin-bottom: 1rem !important;
+  }
+  section[data-testid="stMain"] .block-container .stButton > button {
+    background: linear-gradient(180deg, #3d9bb8 0%, #2d7a94 100%) !important;
+    border: 1px solid #256f87 !important;
+    color: #ffffff !important;
+    position: relative !important;
+    z-index: 1 !important;
+  }
+  section[data-testid="stMain"] .block-container .stButton > button p {
+    color: #ffffff !important;
   }
 </style>
         """,
@@ -340,47 +376,79 @@ def _inject_chat_layout_css() -> None:
     )
 
 
-def _append_qa_if_new(user_text: str, reply: str) -> None:
-    """Append one user + assistant pair unless the chat already ends with this exact pair (stops rerun loops)."""
-    msgs = st.session_state.chat_messages
-    if len(msgs) >= 2:
-        u, a = msgs[-2], msgs[-1]
-        if (
-            u.get("role") == "user"
-            and a.get("role") == "assistant"
-            and u.get("content") == user_text
-            and a.get("content") == reply
-        ):
-            return
-    st.session_state.chat_messages.append({"role": "user", "content": user_text})
+def _queue_chat_turn(text: str) -> None:
+    """Queue a single user turn (processed once at top of show())."""
+    t = _normalize_turn_text(text)
+    if t:
+        st.session_state["_chat_pending"] = t
+
+
+def _on_chat_submit() -> None:
+    key = st.session_state.get("_chat_widget_key")
+    if not key:
+        return
+    raw = st.session_state.get(key)
+    if isinstance(raw, str):
+        _queue_chat_turn(raw)
+
+
+def _run_one_llm_turn_if_pending() -> None:
+    """
+    One question → one LLM call → append user + assistant → bump chat key.
+    Uses a queue so st.chat_input's return value is never used (avoids repeat submits on rerun).
+    """
+    pending = st.session_state.pop("_chat_pending", None)
+    if pending is None:
+        return
+    user_part = _normalize_turn_text(pending)
+    if not user_part:
+        return
+    if _tail_already_answered(user_part):
+        st.session_state._chat_input_key = int(st.session_state.get("_chat_input_key", 0)) + 1
+        return
+    county = st.session_state.get("nearest_county")
+    with st.spinner("Gemini is thinking…"):
+        reply = generate_response(user_part, county)
+    st.session_state.chat_messages.append({"role": "user", "content": user_part})
     st.session_state.chat_messages.append({"role": "assistant", "content": reply})
+    st.session_state._chat_input_key = int(st.session_state.get("_chat_input_key", 0)) + 1
 
 
 def _render_suggested_prompt_row() -> None:
-    """One click appends Q&A; _append_qa_if_new prevents duplicate pairs if Streamlit replays a run."""
-    county = st.session_state.get("nearest_county")
     n = len(SUGGESTED_PROMPTS)
     mid = (n + 1) // 2
     row1 = st.columns(mid)
     for i in range(mid):
         short_lbl, full_q = SUGGESTED_PROMPTS[i]
         with row1[i]:
-            if st.button(short_lbl, key=f"sq_{i}", use_container_width=True):
-                reply = generate_response(full_q, county)
-                _append_qa_if_new(full_q, reply)
+            st.button(
+                short_lbl,
+                key=f"sq_{i}",
+                type="primary",
+                use_container_width=True,
+                on_click=_queue_chat_turn,
+                args=(full_q,),
+            )
     if n > mid:
         row2 = st.columns(n - mid)
         for j, i in enumerate(range(mid, n)):
             short_lbl, full_q = SUGGESTED_PROMPTS[i]
             with row2[j]:
-                if st.button(short_lbl, key=f"sq_{i}", use_container_width=True):
-                    reply = generate_response(full_q, county)
-                    _append_qa_if_new(full_q, reply)
+                st.button(
+                    short_lbl,
+                    key=f"sq_{i}",
+                    type="primary",
+                    use_container_width=True,
+                    on_click=_queue_chat_turn,
+                    args=(full_q,),
+                )
 
 
 def show():
     if "chat_messages" not in st.session_state:
         st.session_state.chat_messages = []
+    if "_chat_input_key" not in st.session_state:
+        st.session_state._chat_input_key = 0
 
     _maybe_process_geo_url()
 
@@ -392,6 +460,9 @@ def show():
     _assistant_header()
     _inject_chat_layout_css()
 
+    _run_geo_llm_announce_if_pending()
+    _run_one_llm_turn_if_pending()
+
     for message in st.session_state.chat_messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
@@ -399,9 +470,10 @@ def show():
     with st.container():
         _render_suggested_prompt_row()
 
-    if prompt := st.chat_input("Ask about hurricanes, floods, evacuation..."):
-        text = prompt.strip()
-        if text:
-            county = st.session_state.get("nearest_county")
-            response = generate_response(text, county)
-            _append_qa_if_new(text, response)
+    chat_key = f"user_chat_{st.session_state._chat_input_key}"
+    st.session_state["_chat_widget_key"] = chat_key
+    st.chat_input(
+        "Ask about hurricanes, floods, evacuation...",
+        key=chat_key,
+        on_submit=_on_chat_submit,
+    )

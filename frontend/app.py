@@ -77,11 +77,25 @@ def _geo_url_targets_ai_assistant() -> bool:
 
 
 def _sync_sidebar_with_geo_url() -> None:
-    """Full-page geo reload must select AI Assistant (works on Streamlit 1.28 without st.query_params)."""
+    """
+    Open AI Assistant when the URL indicates a geo / nav landing — once per URL signature.
+    Do not reset the sidebar on every rerun while lat/lon query params remain, or navigation appears stuck.
+    """
+    raw = _all_query_params()
+    sig = (
+        _qp_first(raw.get("nav")),
+        _qp_first(raw.get("lat")),
+        _qp_first(raw.get("lon")),
+    )
+    if st.session_state.get("_geo_url_nav_sig") == sig:
+        if "sidebar_radio" not in st.session_state:
+            st.session_state.sidebar_radio = "🏠 Home"
+        return
+    if "sidebar_radio" not in st.session_state:
+        st.session_state.sidebar_radio = "🏠 Home"
     if _geo_url_targets_ai_assistant():
         st.session_state.sidebar_radio = "💬 AI Assistant"
-    elif "sidebar_radio" not in st.session_state:
-        st.session_state.sidebar_radio = "🏠 Home"
+    st.session_state._geo_url_nav_sig = sig
 
 
 @st.cache_data(ttl=3600)
@@ -138,11 +152,11 @@ st.markdown(
     [data-testid="stSidebar"] {
         background: linear-gradient(180deg, #fbfdff 0%, #f0f7fb 100%) !important;
         border-right: 1px solid #cfe8f2 !important;
+        z-index: 100010 !important;
     }
     [data-testid="stSidebar"] .block-container {
         padding-top: 0.75rem;
     }
-    /* Tighter top; bottom padding also set with emergency footer block below */
     .main .block-container {
         padding-top: 0.5rem !important;
         padding-bottom: 0.5rem !important;
@@ -241,40 +255,6 @@ with st.sidebar:
     st.markdown("#### 📅 Update schedule")
     st.markdown("**Every 7 days**")
     st.caption(f"Last update: {datetime.now().strftime('%Y-%m-%d')}")
-
-# Emergency footer — all pages (Risk Map included); extra bottom padding so content clears the bar
-st.markdown(
-    """
-<style>
-    .main .block-container { padding-bottom: 4rem !important; }
-    .app-fixed-footer {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: 10000;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: linear-gradient(180deg, #e8f4fc 0%, #d4e9f5 100%);
-        border-top: 2px solid #9ccfe0;
-        padding: 0.65rem 1rem;
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: #0d3d52;
-        box-shadow: 0 -2px 12px rgba(80, 140, 170, 0.12);
-    }
-    .app-fixed-footer-inner {
-        text-align: center;
-        max-width: min(100%, 52rem);
-        margin: 0 auto;
-        padding: 0 0.25rem;
-    }
-</style>
-<div class="app-fixed-footer"><span class="app-fixed-footer-inner">Emergency: Call 911 if you are in immediate danger.</span></div>
-""",
-    unsafe_allow_html=True,
-)
 
 if page == "🏠 Home":
     show_home()
