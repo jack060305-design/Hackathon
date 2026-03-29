@@ -1,0 +1,47 @@
+{
+  "window_days": 7,
+  "markers": [
+    {
+      "lat": 28.55,
+      "lon": -81.38,
+      "risk_percent": 78,
+      "disaster_type": "demo_severe_weather",
+      "next_days": 2,
+      "label": "Demo: elevated inland risk (Central FL)",
+      "detail": "Sample marker for map styling when the live API is offline. Not a real alert.",
+      "source": "demo_fallback"
+    },
+    {
+      "lat": 26.12,
+      "lon": -80.2,
+      "risk_percent": 48,
+      "disaster_type": "demo_flood",
+      "next_days": 3,
+      "label": "Demo: moderate risk (South FL)",
+      "detail": "Illustrates orange-tier risk. Connect API for live USGS + NWS.",
+      "source": "demo_fallback"
+    },
+    {
+      "lat": 30.32,
+      "lon": -81.66,
+      "risk_percent": 32,
+      "disaster_type": "demo_wind",
+      "next_days": 5,
+      "label": "Demo: lower risk (North FL)",
+      "detail": "Illustrates green-tier risk.",
+      "source": "demo_fallback"
+    },
+    {
+      "lat": 27.95,
+      "lon": -82.46,
+      "risk_percent": 65,
+      "disaster_type": "demo_fire_weather",
+      "next_days": 1,
+      "label": "Demo: high risk (West Coast)",
+      "detail": "Sample only — verify with official sources when API is online.",
+      "source": "demo_fallback"
+    }
+  ],
+  "sources": ["demo_fallback", "offline_placeholder"],
+  "_note": "Demo markers keep the map readable when the API is down. Run: backend/ → uvicorn app.main:app --host 127.0.0.1 --port 8000"
+}

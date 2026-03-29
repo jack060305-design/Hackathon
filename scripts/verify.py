@@ -98,7 +98,13 @@ def main() -> None:
     # --- frontend bytecode ---
     print("\n=== frontend: py_compile ===", flush=True)
     fe = ROOT / "frontend"
-    for rel in ("app.py", "pages/map.py", "pages/chatbot.py"):
+    for rel in (
+        "app.py",
+        "county_data.py",
+        "views/map.py",
+        "views/chatbot.py",
+        "views/ocean_tracker.py",
+    ):
         p = fe / rel
         if not p.is_file():
             print("MISSING:", p, file=sys.stderr)
@@ -112,7 +118,14 @@ def main() -> None:
         j = json.load(f)
     assert j.get("type") == "FeatureCollection"
     assert "features" in j
-    print("OK:", len(j["features"]), "features", flush=True)
+    assert len(j["features"]) == 67
+    print("OK: florida_counties.geojson has 67 features", flush=True)
+
+    cp = ROOT / "data" / "florida_county_centroids.json"
+    with open(cp, encoding="utf-8") as f:
+        cen = json.load(f)
+    assert len(cen) == 67
+    print("OK: florida_county_centroids.json has 67 counties", flush=True)
 
     # --- ML ---
     print("\n=== ml: predict.py ===", flush=True)

@@ -3,43 +3,874 @@
   "features": [
     {
       "type": "Feature",
-      "properties": {"name": "Miami-Dade", "risk_zone": "A", "coastal": true},
-      "geometry": {"type": "Point", "coordinates": [-80.19, 25.76]}
+      "properties": {
+        "name": "Alachua"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.32711,
+          29.65221
+        ]
+      }
     },
     {
       "type": "Feature",
-      "properties": {"name": "Broward", "risk_zone": "A", "coastal": true},
-      "geometry": {"type": "Point", "coordinates": [-80.14, 26.12]}
+      "properties": {
+        "name": "Baker"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.21283,
+          30.41565
+        ]
+      }
     },
     {
       "type": "Feature",
-      "properties": {"name": "Palm Beach", "risk_zone": "B", "coastal": true},
-      "geometry": {"type": "Point", "coordinates": [-80.13, 26.64]}
+      "properties": {
+        "name": "Bay"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -85.64418,
+          30.15966
+        ]
+      }
     },
     {
       "type": "Feature",
-      "properties": {"name": "Hillsborough", "risk_zone": "C", "coastal": true},
-      "geometry": {"type": "Point", "coordinates": [-82.46, 27.95]}
+      "properties": {
+        "name": "Bradford"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.15241,
+          29.87472
+        ]
+      }
     },
     {
       "type": "Feature",
-      "properties": {"name": "Orange", "risk_zone": "D", "coastal": false},
-      "geometry": {"type": "Point", "coordinates": [-81.38, 28.54]}
+      "properties": {
+        "name": "Brevard"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.65673,
+          28.46408
+        ]
+      }
     },
     {
       "type": "Feature",
-      "properties": {"name": "Duval", "risk_zone": "B", "coastal": true},
-      "geometry": {"type": "Point", "coordinates": [-81.65, 30.33]}
+      "properties": {
+        "name": "Broward"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.24349,
+          26.13959
+        ]
+      }
     },
     {
       "type": "Feature",
-      "properties": {"name": "Pinellas", "risk_zone": "A", "coastal": true},
-      "geometry": {"type": "Point", "coordinates": [-82.73, 27.96]}
+      "properties": {
+        "name": "Calhoun"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -85.17906,
+          30.39807
+        ]
+      }
     },
     {
       "type": "Feature",
-      "properties": {"name": "Lee", "risk_zone": "A", "coastal": true},
-      "geometry": {"type": "Point", "coordinates": [-81.87, 26.64]}
+      "properties": {
+        "name": "Charlotte"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.15963,
+          26.87214
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Citrus"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.60652,
+          28.84881
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Clay"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.85357,
+          29.97534
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Collier"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.5503,
+          26.00736
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Columbia"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.60861,
+          30.39898
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "DeSoto"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.89218,
+          27.16413
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Dixie"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.26348,
+          29.49644
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Duval"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.57656,
+          30.34711
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Escambia"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -87.38074,
+          30.73861
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Flagler"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.28793,
+          29.49637
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Franklin"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.86189,
+          29.75104
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Gadsden"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.64791,
+          30.61539
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Gilchrist"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.81269,
+          29.80382
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Glades"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.14445,
+          27.05385
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Gulf"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -85.31101,
+          29.82669
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hamilton"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.01477,
+          30.55087
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hardee"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.85829,
+          27.52367
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hendry"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.11815,
+          26.52562
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hernando"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.53753,
+          28.53889
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Highlands"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.20971,
+          27.27243
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hillsborough"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.47222,
+          27.86689
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Holmes"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -85.72899,
+          30.8337
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Indian River"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.54103,
+          27.68385
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jackson"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -85.14741,
+          30.88032
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Jefferson"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.91266,
+          30.43874
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lafayette"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.14156,
+          30.02884
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lake"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.57127,
+          28.84947
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Lee"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.07403,
+          26.54816
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Leon"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.16686,
+          30.5091
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Levy"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.87086,
+          29.1973
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Liberty"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.87909,
+          30.26372
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Madison"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.4355,
+          30.52185
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Manatee"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.58565,
+          27.51539
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Marion"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.00889,
+          29.23405
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Martin"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.31477,
+          27.11219
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Miami-Dade"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.48078,
+          25.40716
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Monroe"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.02733,
+          25.00242
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Nassau"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.75026,
+          30.6526
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Okaloosa"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -86.52563,
+          30.69085
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Okeechobee"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.84248,
+          27.38325
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Orange"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.39835,
+          28.5775
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Osceola"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.27045,
+          28.10084
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Palm Beach"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.17455,
+          26.5557
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pasco"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.58671,
+          28.31093
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pinellas"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.7364,
+          27.87235
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Polk"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.65277,
+          28.0652
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Putnam"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.69744,
+          29.55092
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Santa Rosa"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -87.0348,
+          30.77596
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sarasota"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.40603,
+          27.1388
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Seminole"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.30156,
+          28.77921
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "St. Johns"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.42723,
+          29.91733
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "St. Lucie"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -80.40738,
+          27.36485
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Sumter"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.08531,
+          28.67173
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Suwannee"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.03628,
+          30.17145
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Taylor"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -83.62727,
+          29.90124
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Union"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -82.40736,
+          30.00204
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Volusia"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -81.26396,
+          29.06818
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Wakulla"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -84.25687,
+          30.09155
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Walton"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -86.16536,
+          30.67291
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Washington"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -85.6666,
+          30.63549
+        ]
+      }
     }
   ]
 }

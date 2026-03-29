@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from datetime import datetime
 from ..schemas import RiskPredictionRequest, RiskPredictionResponse
 from ..models import risk_model
+from ..services.florida_counties import florida_counties
 
 router = APIRouter()
 
@@ -36,5 +37,11 @@ async def predict_risk(request: RiskPredictionRequest):
 
 @router.get("/counties")
 async def get_county_list():
-    counties = ["Miami-Dade", "Broward", "Palm Beach", "Hillsborough", "Orange", "Duval"]
+    counties = await florida_counties.get_all_counties()
     return {"counties": counties}
+
+
+@router.get("/county-map")
+async def get_county_map_data():
+    """All 67 counties with lat/lon + evacuation tier for mapping."""
+    return {"counties": florida_counties.get_county_map_points()}

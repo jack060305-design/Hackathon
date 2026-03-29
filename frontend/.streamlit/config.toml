@@ -1,0 +1,14 @@
+# White + pastel blue theme (Streamlit 1.28+)
+[theme]
+primaryColor = "#5eb8d9"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f2f8fc"
+textColor = "#1f3d4a"
+font = "sans serif"
+
+[client]
+toolbarMode = "minimal"
+
+# Single dev URL: http://127.0.0.1:8888 (see run-project.ps1)
+[server]
+port = 8888
